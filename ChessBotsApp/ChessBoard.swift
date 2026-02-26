@@ -83,6 +83,10 @@ struct ChessBoard {
         if move.isEnPassant {
             board [move.from.0][move.to.1] = nil
         }
+        
+        if let promotion = move.promotionPiece {
+            board [move.to.0][move.to.1] = ChessPiece (type: promotion, isWhite: !whiteToMove, hasMoved: true)
+        }
 
         whiteToMove = !whiteToMove
     }

@@ -4,4 +4,5 @@ struct Move {
     var captured: ChessPiece?
     var isCastling: Bool = false
     var isEnPassant: Bool = false
+    var promotionPiece: PieceType? = nil
 }
