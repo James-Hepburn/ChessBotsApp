@@ -7,12 +7,25 @@ struct ChessGameView: View {
     @State private var pendingPromotionMove: Move? = nil
     @State private var showPromotionPicker = false
     @State private var gameOverMessage: String? = nil
-    
+    @State private var isBotThinking = false
+
     let difficulty: Difficulty
     let boardSize = 8
-    
+
     var body: some View {
         VStack {
+            if isBotThinking {
+                Text ("Bot is thinking…")
+                    .foregroundColor (.gray)
+                    .font (.caption)
+                    .padding (.top, 4)
+            } else {
+                Text (board.whiteToMove ? "Your turn" : "")
+                    .foregroundColor (.white)
+                    .font (.caption)
+                    .padding (.top, 4)
+            }
+
             chessBoard
                 .padding ()
         }
@@ -23,7 +36,7 @@ struct ChessGameView: View {
                 Text ("Choose Promotion")
                     .font (.title.bold ())
                     .padding ()
-                
+
                 HStack (spacing: 20) {
                     ForEach ([PieceType.queen, .rook, .bishop, .knight], id: \.self) { pieceType in
                         Button {
@@ -57,15 +70,25 @@ struct ChessGameView: View {
                             .foregroundColor (.white)
                             .multilineTextAlignment (.center)
                             .padding ()
-                        
+
                         Button ("Play Again") {
                             board = ChessBoard ()
                             gameOverMessage = nil
                             selectedSquare = nil
                             legalMovesForSelected = []
+                            isBotThinking = false
                         }
                         .frame (width: 140, height: 50)
                         .background (Color.purple)
+                        .foregroundColor (.white)
+                        .cornerRadius (10)
+                        .font (.title2.bold ())
+
+                        Button ("Close") {
+                            gameOverMessage = nil
+                        }
+                        .frame (width: 140, height: 50)
+                        .background (Color.gray.opacity (0.4))
                         .foregroundColor (.white)
                         .cornerRadius (10)
                         .font (.title2.bold ())
@@ -75,7 +98,7 @@ struct ChessGameView: View {
             }
         }
     }
-    
+
     var chessBoard: some View {
         VStack (spacing: 2) {
             ForEach (0..<boardSize, id: \.self) { row in
@@ -101,17 +124,31 @@ struct ChessGameView: View {
             }
         }
     }
-    
+
     func triggerBotMove () {
         guard !board.whiteToMove else { return }
-        DispatchQueue.main.asyncAfter (deadline: .now () + 0.3) {
-            if let move = ChessBot.makeMove (board: &board, difficulty: difficulty) {
+        guard gameOverMessage == nil else { return }
+
+        isBotThinking = true
+
+        var boardCopy = board
+        let minThinkTime: TimeInterval = difficulty == .easy ? 0.6 : 0.0
+
+        DispatchQueue.global (qos: .userInitiated).async {
+            let start = Date ()
+            let move = ChessBot.makeMove (board: &boardCopy, difficulty: difficulty)
+            let elapsed = Date ().timeIntervalSince (start)
+            let remaining = max (0, minThinkTime - elapsed)
+
+            DispatchQueue.main.asyncAfter (deadline: .now () + remaining) {
+                isBotThinking = false
+                guard let move = move else { return }
                 board.makeMove (move)
                 checkGameOver ()
             }
         }
     }
-    
+
     func checkGameOver () {
         if GameState.isCheckmate (board: &board) {
             gameOverMessage = board.whiteToMove ? "Black wins by checkmate!" : "White wins by checkmate!"
@@ -119,14 +156,14 @@ struct ChessGameView: View {
             gameOverMessage = "Stalemate — it's a draw!"
         }
     }
-    
+
     func isPromotion (_ move: Move) -> Bool {
         guard let piece = board.board [move.from.0][move.from.1] else { return false }
         return piece.type == .pawn && (move.to.0 == 0 || move.to.0 == 7)
     }
-    
+
     func handleTap (row: Int, col: Int) {
-        guard board.whiteToMove else { return }
+        guard board.whiteToMove, !isBotThinking else { return }
         let tappedSquare = (row, col)
 
         if selectedSquare != nil {
@@ -139,7 +176,7 @@ struct ChessGameView: View {
                     checkGameOver ()
                     triggerBotMove ()
                 }
-                
+
                 selectedSquare = nil
                 legalMovesForSelected = []
                 return
@@ -158,22 +195,22 @@ struct ChessGameView: View {
             }
         }
     }
-    
+
     func selectSquare (row: Int, col: Int) {
         selectedSquare = (row, col)
         let allLegal = GameState.generateLegalMoves (board: &board)
         legalMovesForSelected = allLegal.filter { $0.from == (row, col) }
     }
-    
+
     func squareColor (row: Int, col: Int) -> Color {
         if selectedSquare?.0 == row && selectedSquare?.1 == col {
             return Color.yellow
         }
-        
+
         if legalMovesForSelected.contains (where: { $0.to == (row, col) }) {
             return Color.green.opacity (0.6)
         }
-        
+
         return (row + col).isMultiple (of: 2) ? Color.white : Color.purple
     }
 }
