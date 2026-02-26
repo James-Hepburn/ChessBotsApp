@@ -31,12 +31,15 @@ struct ChessGameView: View {
                                 move.promotionPiece = pieceType
                                 board.makeMove (move)
                                 checkGameOver ()
+                                triggerBotMove ()
                                 pendingPromotionMove = nil
                                 showPromotionPicker = false
                             }
                         } label: {
-                            Text (ChessPiece(type: pieceType, isWhite: true, hasMoved: false).symbol)
-                                .font (.system (size: 50))
+                            Image (ChessPiece (type: pieceType, isWhite: true, hasMoved: false).imageName)
+                                .resizable ()
+                                .scaledToFit ()
+                                .frame (width: 50, height: 50)
                         }
                     }
                 }
@@ -84,8 +87,10 @@ struct ChessGameView: View {
                                 .frame (width: 40, height: 40)
 
                             if let piece = board.board [row][col] {
-                                Text (piece.symbol)
-                                    .font (.title.bold ())
+                                Image (piece.imageName)
+                                    .resizable ()
+                                    .scaledToFit ()
+                                    .frame (width: 36, height: 36)
                             }
                         }
                         .onTapGesture {
@@ -93,6 +98,16 @@ struct ChessGameView: View {
                         }
                     }
                 }
+            }
+        }
+    }
+    
+    func triggerBotMove () {
+        guard !board.whiteToMove else { return }
+        DispatchQueue.main.asyncAfter (deadline: .now () + 0.3) {
+            if let move = ChessBot.makeMove (board: &board, difficulty: difficulty) {
+                board.makeMove (move)
+                checkGameOver ()
             }
         }
     }
@@ -122,6 +137,7 @@ struct ChessGameView: View {
                 } else {
                     board.makeMove (move)
                     checkGameOver ()
+                    triggerBotMove ()
                 }
                 
                 selectedSquare = nil

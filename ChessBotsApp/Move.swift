@@ -5,4 +5,5 @@ struct Move {
     var isCastling: Bool = false
     var isEnPassant: Bool = false
     var promotionPiece: PieceType? = nil
+    var movedPiece: ChessPiece? = nil
 }

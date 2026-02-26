@@ -13,11 +13,7 @@ struct GameState {
         for move in pseudoMoves {
             board.makeMove (move)
             
-            var kingPosition = board.whiteKingPosition
-            
-            if board.whiteToMove {
-                kingPosition = board.blackKingPosition
-            }
+            let kingPosition = board.whiteToMove ? board.blackKingPosition : board.whiteKingPosition
 
             if !AttackDetector.isSquareAttacked (board: board, square: kingPosition, byWhite: board.whiteToMove) {
                 legalMoves.append (move)
@@ -30,12 +26,7 @@ struct GameState {
     }
 
     static func isCheck (board: ChessBoard) -> Bool {
-        var kingPosition = board.blackKingPosition
-        
-        if board.whiteToMove {
-            kingPosition = board.whiteKingPosition
-        }
-        
+        let kingPosition = board.whiteToMove ? board.whiteKingPosition : board.blackKingPosition
         return AttackDetector.isSquareAttacked (board: board, square: kingPosition, byWhite: !board.whiteToMove)
     }
 

@@ -51,13 +51,16 @@ struct ChessBoard {
     
     mutating func makeMove (_ move: Move) {
         let piece = board [move.from.0][move.from.1]
-        moveHistory.append (move)
+            
+        var recordedMove = move
+        recordedMove.movedPiece = piece
+        moveHistory.append (recordedMove)
 
         if var piece = piece {
             piece = ChessPiece (type: piece.type, isWhite: piece.isWhite, hasMoved: true)
             board [move.to.0][move.to.1] = piece
         }
-        
+
         board [move.from.0][move.from.1] = nil
 
         if let piece = piece, piece.type == .king {
@@ -85,7 +88,7 @@ struct ChessBoard {
         }
         
         if let promotion = move.promotionPiece {
-            board [move.to.0][move.to.1] = ChessPiece (type: promotion, isWhite: !whiteToMove, hasMoved: true)
+            board [move.to.0][move.to.1] = ChessPiece (type: promotion, isWhite: whiteToMove, hasMoved: true)
         }
 
         whiteToMove = !whiteToMove
@@ -96,7 +99,7 @@ struct ChessBoard {
 
         let piece = board [move.to.0][move.to.1]
 
-        board [move.from.0][move.from.1] = piece
+        board [move.from.0][move.from.1] = move.movedPiece
         board [move.to.0][move.to.1] = move.captured
 
         if let piece = piece, piece.type == .king {
@@ -110,11 +113,11 @@ struct ChessBoard {
         if move.isCastling {
             if move.to.1 == 6 {
                 let rook = board [move.to.0][5]
-                board [move.to.0][7] = ChessPiece (type: .rook, isWhite: rook!.isWhite, hasMoved: false)
+                board [move.to.0][7] = ChessPiece (type: .rook, isWhite: rook?.isWhite ?? true, hasMoved: false)
                 board [move.to.0][5] = nil
             } else if move.to.1 == 2 {
                 let rook = board [move.to.0][3]
-                board [move.to.0][0] = ChessPiece (type: .rook, isWhite: rook!.isWhite, hasMoved: false)
+                board [move.to.0][0] = ChessPiece (type: .rook, isWhite: rook?.isWhite ?? true, hasMoved: false)
                 board [move.to.0][3] = nil
             }
         }

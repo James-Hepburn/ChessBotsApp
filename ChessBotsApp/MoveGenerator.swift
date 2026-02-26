@@ -126,29 +126,25 @@ struct MoveGenerator {
     }
     
     static func generateCastlingMoves (board: ChessBoard, row: Int, piece: ChessPiece, moves: inout [Move]) {
-        guard !piece.hasMoved else { return }
+        guard !piece.hasMoved else {
+            return
+        }
 
         let kingSquare = (row, 4)
-        if AttackDetector.isSquareAttacked (board: board, square: kingSquare, byWhite: !piece.isWhite) { return }
-
+        if AttackDetector.isSquareAttacked (board: board, square: kingSquare, byWhite: !piece.isWhite) {
+            return
+        }
+        
         if let rook = board.board [row][7], !rook.hasMoved {
             if board.board [row][5] == nil && board.board [row][6] == nil {
                 let passingSquare = (row, 5)
                 let landingSquare = (row, 6)
                 
-                if !AttackDetector.isSquareAttacked (board: board, square: passingSquare, byWhite: !piece.isWhite) && !AttackDetector.isSquareAttacked (board: board, square: landingSquare, byWhite: !piece.isWhite) {
-                    moves.append (Move (from: (row, 4), to: (row, 6), captured: nil, isCastling: true))
-                }
-            }
-        }
+                let pass = AttackDetector.isSquareAttacked (board: board, square: passingSquare, byWhite: !piece.isWhite)
+                let land = AttackDetector.isSquareAttacked (board: board, square: landingSquare, byWhite: !piece.isWhite)
 
-        if let rook = board.board [row][0], !rook.hasMoved {
-            if board.board [row][1] == nil && board.board [row][2] == nil && board.board [row][3] == nil {
-                let passingSquare = (row, 3)
-                let landingSquare = (row, 2)
-                
-                if !AttackDetector.isSquareAttacked (board: board, square: passingSquare, byWhite: !piece.isWhite) && !AttackDetector.isSquareAttacked (board: board, square: landingSquare, byWhite: !piece.isWhite) {
-                    moves.append (Move (from: (row, 4), to: (row, 2), captured: nil, isCastling: true))
+                if !pass && !land {
+                    moves.append (Move (from: (row, 4), to: (row, 6), captured: nil, isCastling: true))
                 }
             }
         }
