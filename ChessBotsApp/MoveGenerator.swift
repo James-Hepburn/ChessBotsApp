@@ -51,6 +51,16 @@ struct MoveGenerator {
                 }
             }
         }
+        
+        if let lastMove = board.moveHistory.last {
+            let lastPiece = board.board [lastMove.to.0][lastMove.to.1]
+            
+            if let lastPiece = lastPiece, lastPiece.type == .pawn, abs (lastMove.to.0 - lastMove.from.0) == 2, lastMove.to.0 == row, abs (lastMove.to.1 - col) == 1 {
+                let captureRow = row + direction
+                let captureCol = lastMove.to.1
+                moves.append (Move (from: (row, col), to: (captureRow, captureCol), captured: lastPiece, isEnPassant: true))
+            }
+        }
     }
     
     static func generateSlidingMoves (board: ChessBoard, row: Int, col: Int, directions: [(Int, Int)], piece: ChessPiece, moves: inout [Move]) {

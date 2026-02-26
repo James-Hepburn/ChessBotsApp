@@ -3,4 +3,5 @@ struct Move {
     let to: (Int, Int)
     var captured: ChessPiece?
     var isCastling: Bool = false
+    var isEnPassant: Bool = false
 }

@@ -79,6 +79,10 @@ struct ChessBoard {
                 board [move.to.0][0] = nil
             }
         }
+        
+        if move.isEnPassant {
+            board [move.from.0][move.to.1] = nil
+        }
 
         whiteToMove = !whiteToMove
     }
@@ -109,6 +113,11 @@ struct ChessBoard {
                 board [move.to.0][0] = ChessPiece (type: .rook, isWhite: rook!.isWhite, hasMoved: false)
                 board [move.to.0][3] = nil
             }
+        }
+        
+        if move.isEnPassant {
+            board [move.from.0][move.to.1] = move.captured
+            board [move.to.0][move.to.1] = nil
         }
 
         whiteToMove = !whiteToMove
