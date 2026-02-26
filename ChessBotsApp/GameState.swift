@@ -1,7 +1,14 @@
 struct GameState {
     static func generateLegalMoves (board: inout ChessBoard) -> [Move] {
-        let pseudoMoves = MoveGenerator.generatePseudoLegalMoves (board: board)
+        var pseudoMoves = MoveGenerator.generatePseudoLegalMoves (board: board)
         var legalMoves: [Move] = []
+        
+        for row in 0...7 {
+                for col in 0...7 {
+                    guard let piece = board.board [row][col], piece.isWhite == board.whiteToMove, piece.type == .king else { continue }
+                    MoveGenerator.generateCastlingMoves (board: board, row: row, piece: piece, moves: &pseudoMoves)
+                }
+            }
 
         for move in pseudoMoves {
             board.makeMove (move)

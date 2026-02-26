@@ -67,6 +67,18 @@ struct ChessBoard {
                 blackKingPosition = move.to
             }
         }
+        
+        if move.isCastling {
+            if move.to.1 == 6 {
+                let rook = board [move.to.0][7]
+                board [move.to.0][5] = ChessPiece (type: .rook, isWhite: rook!.isWhite, hasMoved: true)
+                board [move.to.0][7] = nil
+            } else if move.to.1 == 2 {
+                let rook = board [move.to.0][0]
+                board [move.to.0][3] = ChessPiece (type: .rook, isWhite: rook!.isWhite, hasMoved: true)
+                board [move.to.0][0] = nil
+            }
+        }
 
         whiteToMove = !whiteToMove
     }
@@ -84,6 +96,18 @@ struct ChessBoard {
                 whiteKingPosition = move.from
             } else {
                 blackKingPosition = move.from
+            }
+        }
+        
+        if move.isCastling {
+            if move.to.1 == 6 {
+                let rook = board [move.to.0][5]
+                board [move.to.0][7] = ChessPiece (type: .rook, isWhite: rook!.isWhite, hasMoved: false)
+                board [move.to.0][5] = nil
+            } else if move.to.1 == 2 {
+                let rook = board [move.to.0][3]
+                board [move.to.0][0] = ChessPiece (type: .rook, isWhite: rook!.isWhite, hasMoved: false)
+                board [move.to.0][3] = nil
             }
         }
 
