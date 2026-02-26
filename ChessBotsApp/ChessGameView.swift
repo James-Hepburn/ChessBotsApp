@@ -6,6 +6,7 @@ struct ChessGameView: View {
     @State private var legalMovesForSelected: [Move] = []
     @State private var pendingPromotionMove: Move? = nil
     @State private var showPromotionPicker = false
+    @State private var gameOverMessage: String? = nil
     
     let difficulty: Difficulty
     let boardSize = 8
@@ -29,6 +30,7 @@ struct ChessGameView: View {
                             if var move = pendingPromotionMove {
                                 move.promotionPiece = pieceType
                                 board.makeMove (move)
+                                checkGameOver ()
                                 pendingPromotionMove = nil
                                 showPromotionPicker = false
                             }
@@ -41,6 +43,33 @@ struct ChessGameView: View {
                 .padding ()
             }
             .presentationDetents ([.fraction (0.25)])
+        }
+        .overlay {
+            if let message = gameOverMessage {
+                ZStack {
+                    Color.black.opacity (0.8)
+                    VStack (spacing: 20) {
+                        Text (message)
+                            .font (.title.bold ())
+                            .foregroundColor (.white)
+                            .multilineTextAlignment (.center)
+                            .padding ()
+                        
+                        Button ("Play Again") {
+                            board = ChessBoard ()
+                            gameOverMessage = nil
+                            selectedSquare = nil
+                            legalMovesForSelected = []
+                        }
+                        .frame (width: 140, height: 50)
+                        .background (Color.purple)
+                        .foregroundColor (.white)
+                        .cornerRadius (10)
+                        .font (.title2.bold ())
+                    }
+                }
+                .ignoresSafeArea ()
+            }
         }
     }
     
@@ -68,6 +97,14 @@ struct ChessGameView: View {
         }
     }
     
+    func checkGameOver () {
+        if GameState.isCheckmate (board: &board) {
+            gameOverMessage = board.whiteToMove ? "Black wins by checkmate!" : "White wins by checkmate!"
+        } else if GameState.isStalemate (board: &board) {
+            gameOverMessage = "Stalemate — it's a draw!"
+        }
+    }
+    
     func isPromotion (_ move: Move) -> Bool {
         guard let piece = board.board [move.from.0][move.from.1] else { return false }
         return piece.type == .pawn && (move.to.0 == 0 || move.to.0 == 7)
@@ -84,6 +121,7 @@ struct ChessGameView: View {
                     showPromotionPicker = true
                 } else {
                     board.makeMove (move)
+                    checkGameOver ()
                 }
                 
                 selectedSquare = nil
