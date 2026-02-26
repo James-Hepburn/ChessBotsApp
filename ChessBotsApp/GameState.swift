@@ -4,13 +4,12 @@ struct GameState {
         var legalMoves: [Move] = []
 
         for move in pseudoMoves {
-            let captured = board.board [move.to.0][move.to.1]
             board.makeMove (move)
             
-            var kingPosition = board.blackKingPosition
+            var kingPosition = board.whiteKingPosition
             
             if board.whiteToMove {
-                kingPosition = board.whiteKingPosition
+                kingPosition = board.blackKingPosition
             }
 
             if !AttackDetector.isSquareAttacked (board: board, square: kingPosition, byWhite: board.whiteToMove) {
@@ -18,7 +17,6 @@ struct GameState {
             }
 
             board.undoMove ()
-            board.board [move.to.0][move.to.1] = captured
         }
 
         return legalMoves

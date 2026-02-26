@@ -53,7 +53,11 @@ struct ChessBoard {
         let piece = board [move.from.0][move.from.1]
         moveHistory.append (move)
 
-        board [move.to.0][move.to.1] = piece
+        if var piece = piece {
+            piece = ChessPiece (type: piece.type, isWhite: piece.isWhite, hasMoved: true)
+            board [move.to.0][move.to.1] = piece
+        }
+        
         board [move.from.0][move.from.1] = nil
 
         if let piece = piece, piece.type == .king {
